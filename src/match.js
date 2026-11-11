@@ -8,7 +8,7 @@ const ZONE_Y = { high: 1.55, mid: 1.15, low: 0.5 };
 export class Match {
   constructor(fighters, controllers, fx, opts = {}) {
     this.f = fighters; this.ctl = controllers; this.fx = fx;
-    this.roundsToWin = opts.roundsToWin || 2; this.roundTime = opts.roundTime || 99;
+    this.roundsToWin = opts.roundsToWin || 2; this.roundTime = opts.roundTime || 99; this.introDelay = opts.introDelay || 0;
     this.round = 0; this.over = false; this.hitstop = 0; this.worldScale = 1;
     this.startRound();
   }
@@ -16,8 +16,7 @@ export class Match {
   startRound() {
     this.round++; this.phase = 'intro'; this.pt = 0; this.timer = this.roundTime; this.clinch = null; this.sub = null; this.said = 0; this.winner = null;
     this.f[0].reset(-1.9, 0, Math.PI / 2); this.f[1].reset(1.9, 0, -Math.PI / 2);
-    this.fx.announce(this.round >= this.roundsToWin * 2 - 1 && this.round > 1 ? 'FINAL ROUND' : 'ROUND ' + this.round, 'round');
-    this.fx.sound('bell');
+    this.pt = this.round === 1 ? -this.introDelay : 0; this.said = -1;
   }
 
   opp(f) { return this.f[1 - f.idx]; }
@@ -270,6 +269,7 @@ export class Match {
     this.pt += dtReal;
 
     if (this.phase === 'intro') {
+      if (this.pt >= 0 && this.said < 0) { this.said = 0; this.fx.announce(this.round >= this.roundsToWin * 2 - 1 && this.round > 1 ? 'FINAL ROUND' : 'ROUND ' + this.round, 'round'); this.fx.sound('bell'); }
       if (this.pt > 1.5 && this.said === 0) { this.said = 1; this.fx.announce('FIGHT!', 'fight'); }
       if (this.pt > 2.1) { this.phase = 'fight'; this.pt = 0; }
     } else if (this.phase === 'fight') {

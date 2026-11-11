@@ -86,6 +86,12 @@ export class UI {
     this.el.timer.textContent = Math.max(0, Math.ceil(match.timer)); this.el.timer.classList.toggle('slow', match.worldScale < 0.8);
     this.el.round.textContent = 'ROUND ' + match.round;
   }
+  versus(a, b) {
+    const v = document.getElementById('versus');
+    [a, b].forEach((c, i) => { const d = v.querySelectorAll('.vs')[i]; d.querySelector('img').src = this.portraits[c.id]; d.querySelector('b').textContent = c.name.toUpperCase(); d.querySelector('small').textContent = c.title; });
+    v.classList.add('hidden'); void v.offsetWidth; v.classList.remove('hidden'); clearTimeout(this._vs); this._vs = setTimeout(() => v.classList.add('hidden'), 3000);
+  }
+  hideVersus() { clearTimeout(this._vs); document.getElementById('versus').classList.add('hidden'); }
   announce(text, kind) { const a = this.el.announce; a.className = kind; a.textContent = text; void a.offsetWidth; a.classList.add('go'); }
   callout(idx, name, tier, sub) {
     const e = document.createElement('span'); e.className = tier; e.innerHTML = `<small>${sub || (tier === 'advanced' ? 'ADVANCED' : 'SPECIAL')}</small>${name}`;

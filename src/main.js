@@ -64,7 +64,7 @@ function makePortraits() {
     ps.remove(m.group);
     // optional hand-made / photographic portrait override
     const img = new Image(); img.onload = () => { ui.portraits[c.id] = img.src; document.querySelectorAll(`img[alt="${c.name}"]`).forEach((e) => (e.src = img.src)); };
-    img.src = `assets/portraits/${c.id}.jpg`;
+    img.onerror = () => {}; img.src = `assets/portraits/${c.id}.jpg`;
   }
   resize();
 }
@@ -102,7 +102,8 @@ function startMatch(i0, i1, attract = false) {
   g.fighters = [new Fighter(ROSTER[i0], 0, scene), new Fighter(ROSTER[i1], 1, scene)];
   const ctl = attract ? [new AIController('normal'), new AIController('normal')]
     : [new HumanController(input, SCHEMES.p1, camera), g.mode === 'versus' ? new HumanController(input, SCHEMES.p2, camera) : new AIController(g.level)];
-  g.match = new Match(g.fighters, ctl, fx, { roundsToWin: attract ? 1 : 2 });
+  g.match = new Match(g.fighters, ctl, fx, { roundsToWin: attract ? 1 : 2, introDelay: attract ? 0 : 2.6 });
+  if (attract) ui.hideVersus(); else ui.versus(ROSTER[i0], ROSTER[i1]);
   g.ctl = ctl;
   arena.setJumbo(ROSTER[i0].name.toUpperCase() + '  vs  ' + ROSTER[i1].name.toUpperCase(), attract ? 'TONIGHT — LIVE' : 'CHAMPIONSHIP BOUT');
   if (!attract) {
@@ -116,7 +117,7 @@ function startAttract() {
   const a = (Math.random() * ROSTER.length) | 0; let b = (Math.random() * ROSTER.length) | 0; if (b === a) b = (a + 1) % ROSTER.length;
   startMatch(a, b, true);
 }
-function toTitle() { g.state = 'title'; ui.screen('title'); ui.el.hud.classList.add('hidden'); ui.hint(null); ui.prompt(null); ui.subMeter(null); ui.reticle(false); startAttract(); }
+function toTitle() { ui.hideVersus(); g.state = 'title'; ui.screen('title'); ui.el.hud.classList.add('hidden'); ui.hint(null); ui.prompt(null); ui.subMeter(null); ui.reticle(false); startAttract(); }
 
 // ---------------------------------------------------------------- menus
 const $ = (s) => document.querySelector(s);

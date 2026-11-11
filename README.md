@@ -67,9 +67,10 @@ Arrow keys move, `J` jab, `K` push kick, `Y` power cross, `H` roundhouse, `L` gr
 ## Tech notes
 
 - Rendering: [three.js](https://threejs.org) r160 (vendored in `vendor/`, MIT licence).
-- Fighters are procedural jointed models animated from a pose library (`src/anim.js`, `src/fighterModel.js`); no external art assets are required.
+- Graphics quality steps down automatically on slow machines; force a level with `?q=0` (lowest) to `?q=3`.
+- In-ring fighters are procedural jointed models animated from a pose library (`src/anim.js`, `src/fighterModel.js`); no external art assets are required.
 - Sound is synthesised with WebAudio.
-- To replace a character portrait with your own art, drop a JPEG at `assets/portraits/<id>.jpg` (`eric`, `shredder`, `titan`, `ragnar`, `smiles`, `diablo`, `osaka`, `kyoto`).
+- Character portraits (select screen, HUD, pre-fight splash) are AI-generated images in `assets/portraits/`. To replace one, drop a JPEG at `assets/portraits/<id>.jpg` (`eric`, `shredder`, `titan`, `ragnar`, `smiles`, `diablo`, `osaka`, `kyoto`).
 
 | File | Purpose |
 | --- | --- |
