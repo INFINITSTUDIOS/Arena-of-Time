@@ -75,7 +75,7 @@ export const ROSTER = [
     id: 'smiles', name: 'Mr. Smiles', title: 'The Laughing Lunatic',
     blurb: 'A psychotic clown with a painted grin and mismatched gloves who laughs while being punched.',
     gimmick: 'LAUGH IT OFF — gains mana every time he is hit. One glove hides a chemical irritant that blurs your vision.',
-    stats: { hp: 96, power: 0.98, speed: 1.08, anim: 1.05, reach: 1.0, grapple: 0.9, mana: 1.1, laugh: true },
+    stats: { hp: 104, power: 1.04, speed: 1.08, anim: 1.08, reach: 1.0, grapple: 0.9, mana: 1.1, laugh: true },
     bars: { Power: 6, Speed: 7, Health: 5, Grapple: 4 },
     look: { scale: 1.02, bulk: 1.08, skin: 0xd2a070, trunks: 0xc8202a, trim: 0x1c8fd0, gloves: [0xf2c200, 0x4fd04a], gloveSize: 1.15 },
     moves: {
