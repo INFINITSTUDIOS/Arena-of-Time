@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arena of Time — Fighter Viewer</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05070d; color: #fff; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #bar { position: fixed; left: 0; right: 0; top: 0; display: flex; gap: 10px; align-items: center; padding: 12px 16px; background: linear-gradient(rgba(5,7,13,.9), transparent); flex-wrap: wrap; }
+  #bar b { font: 400 22px Impact, 'Arial Black', sans-serif; letter-spacing: 2px; margin-right: 10px; }
+  button { font: 700 12px Arial; letter-spacing: 1px; color: #fff; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.6); padding: 7px 12px; cursor: pointer; }
+  button.on { background: #3aa8ff; border-color: #3aa8ff; }
+  #note { position: fixed; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 12px; opacity: .75; pointer-events: none; }
+  #load { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; letter-spacing: 2px; pointer-events: none; }
+</style>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="bar"><b>FIGHTER VIEWER</b><span id="models"></span><button id="anim" class="on">ANIMATION</button><button id="spin" class="on">TURNTABLE</button><button id="face">FACE</button><button id="full">FULL BODY</button></div>
+<div id="load">LOADING MODEL…</div>
+<div id="note">Drag to rotate · scroll to zoom · right-drag to pan</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './vendor/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from './vendor/jsm/controls/OrbitControls.js';
+import { buildArena } from './src/arena.js';
+
+// Add an entry here as each fighter's model is produced.
+const MODELS = [{ id: 'eric', name: 'Eric', file: 'design/models/eric_rigged.glb' }];
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x030408);
+const camera = new THREE.PerspectiveCamera(35, 1, 0.05, 400);
+const arena = buildArena(scene);
+const face = new THREE.DirectionalLight(0xffffff, 1.2); scene.add(face);
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.52; controls.minDistance = 0.4; controls.maxDistance = 9;
+const setView = (y, dist) => { controls.target.set(0, y, 0); camera.position.set(dist * 0.35, y + dist * 0.08, dist); };
+setView(0.95, 4.2);
+
+let current = null, mixer = null, animOn = true, spinOn = true, height = 1.8;
+const loader = new GLTFLoader(), loadEl = document.getElementById('load');
+function show(m) {
+  loadEl.style.display = 'flex'; loadEl.textContent = 'LOADING ' + m.name.toUpperCase() + '…';
+  loader.load(m.file, (g) => {
+    if (current) scene.remove(current);
+    current = g.scene; mixer = null;
+    current.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+    scene.add(current); current.updateMatrixWorld(true);
+    height = new THREE.Box3().setFromObject(current).getSize(new THREE.Vector3()).y;
+    if (g.animations.length) { mixer = new THREE.AnimationMixer(current); mixer.clipAction(g.animations[0]).play(); }
+    setView(height * 0.53, height * 2.4); loadEl.style.display = 'none';
+    window.__viewer = { loaded: m.id, clips: g.animations.map((a) => a.name), height };
+  }, undefined, (e) => { loadEl.textContent = 'Could not load ' + m.file; window.__viewer = { error: String(e) }; });
+}
+const box = document.getElementById('models');
+MODELS.forEach((m, i) => { const b = document.createElement('button'); b.textContent = m.name.toUpperCase(); b.onclick = () => { box.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); show(m); }; if (!i) b.classList.add('on'); box.appendChild(b); });
+const toggle = (id, fn) => { const b = document.getElementById(id); b.onclick = () => b.classList.toggle('on', fn()); };
+toggle('anim', () => (animOn = !animOn)); toggle('spin', () => (spinOn = !spinOn));
+document.getElementById('face').onclick = () => { spinOn = false; document.getElementById('spin').classList.remove('on'); controls.target.set(0, height * 0.93, 0); camera.position.set(height * 0.12, height * 0.94, height * 0.48); };
+document.getElementById('full').onclick = () => setView(height * 0.53, height * 2.4);
+
+function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+const clock = new THREE.Clock();
+(function frame() {
+  const dt = Math.min(0.05, clock.getDelta());
+  if (mixer && animOn) mixer.update(dt);
+  if (current && spinOn) current.rotation.y += dt * 0.5;
+  face.position.copy(camera.position);
+  controls.update(); arena.update(dt, camera); renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+})();
+show(MODELS[0]);
+</script>
+</body>
+</html>

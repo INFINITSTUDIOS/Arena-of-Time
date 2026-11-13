@@ -28,7 +28,8 @@ jobs:
       - name: Assemble site
         run: |
           mkdir _site
-          cp -r index.html style.css src vendor assets _site/
+          cp -r index.html viewer.html style.css src vendor assets _site/
+          mkdir -p _site/design && cp -r design/models _site/design/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
